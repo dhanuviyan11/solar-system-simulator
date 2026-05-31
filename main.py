@@ -77,8 +77,9 @@ class Planet:
         screen_y = (self.y + camera_y) * zoom
         pygame.draw.circle(win, self.color, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
         # Labels
-        label = font.render(self.name, True, WHITE)
-        win.blit(label, (screen_x + self.radius + 5, screen_y - self.radius))
+        if self.name != "Asteroid":
+            label = font.render(self.name, True, WHITE)
+            win.blit(label, (screen_x + self.radius + 5, screen_y - self.radius))
 
     def attraction(self, other):
         other_x, other_y = other.x, other.y
@@ -115,11 +116,14 @@ class Planet:
             total_fy += fy
         self.x_vel += total_fx / self.mass * self.TIMESTEP
         self.y_vel += total_fy / self.mass * self.TIMESTEP
-        self.x += self.x_vel * self.TIMESTEP * 0.995
-        self.y += self.y_vel * self.TIMESTEP * 0.995
+        self.x += self.x_vel * self.TIMESTEP
+        self.y += self.y_vel * self.TIMESTEP
         self.orbit.append((self.x, self.y))
         if len(self.orbit) > 500:
             self.orbit.pop(0)
+class Asteroid(Planet):
+    def __init__(self, x, y, radius, color, mass):
+        super().__init__(x, y, radius, color, mass, "Asteroid")
 
 def draw_window():
     WIN.fill(BLACK)
@@ -129,6 +133,9 @@ def draw_window():
     # Draw planets
     for planet in planets:
         planet.draw(WIN)
+    # Draw asteroids
+    for asteroid in asteroids:
+        asteroid.draw(WIN)
     # HUD
     hud_text = [
         f"Zoom: {zoom:.2f}",
@@ -177,6 +184,18 @@ moon.orbit_speed = 0.05
 # Mars
 mars = Planet(WIDTH // 2 - 340, HEIGHT // 2, 7, RED, 7, "Mars")
 mars.y_vel = -1.6
+
+asteroids=[]
+for _ in range(120):
+    angle=random.uniform(0, 2*math.pi)
+    distance=470
+    x=sun.x + math.cos(angle) * distance
+    y=sun.y + math.sin(angle) * distance
+    asteroid=Asteroid(x, y, 2, DARK_GREY, 1)
+    orbital_speed=random.uniform(1.22, 1.32)
+    asteroid.x_vel=math.sin(angle) * orbital_speed
+    asteroid.y_vel=-math.cos(angle) * orbital_speed
+    asteroids.append(asteroid)
 
 planets = [
     sun,
@@ -234,5 +253,7 @@ while run:
         for _ in range(simulation_speed):
             for planet in planets:
                 planet.update_position(planets)
+            for asteroid in asteroids:
+                asteroid.update_position([sun])
     draw_window()           
 pygame.quit()
