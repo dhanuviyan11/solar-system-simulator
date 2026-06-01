@@ -197,14 +197,7 @@ for _ in range(120):
     asteroid.y_vel=-math.cos(angle) * orbital_speed
     asteroids.append(asteroid)
 
-planets = [
-    sun,
-    mercury,
-    venus,
-    earth,
-    moon,
-    mars
-]
+planets = [sun, mercury, venus, earth, moon, mars]
 
 selected_planet=None
 run = True
