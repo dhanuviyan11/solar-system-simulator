@@ -18,6 +18,10 @@ DARK_GREY = (80, 78, 81)
 ORANGE = (255, 165, 0)
 BLACK = (0, 0, 0)
 JUPITER_COLOR=(210, 180, 140)
+IO_COLOR=(255, 255, 255)
+EUROPA_COLOR=(200, 200, 255)
+GANYMEDE_COLOR=(200, 200, 200)
+CALLISTO_COLOR=(150, 150, 150)
 
 # Font
 font = pygame.font.SysFont("Arial", 16)
@@ -78,6 +82,14 @@ class Planet:
         screen_y = (self.y + camera_y) * zoom
         if self.name == "Jupiter":
             pygame.draw.circle(win, (230, 200, 160), (int(screen_x), int(screen_y)), max(1, int((self.radius)*zoom)))
+        '''elif self.name == "Io":
+            pygame.draw.circle(win, IO_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
+        elif self.name == "Europa":
+            pygame.draw.circle(win, EUROPA_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
+        elif self.name == "Ganymede":
+            pygame.draw.circle(win, GANYMEDE_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
+        elif self.name == "Callisto":
+            pygame.draw.circle(win, CALLISTO_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))'''
         pygame.draw.circle(win, self.color, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
         # Labels
         if self.name != "Asteroid":
@@ -177,8 +189,7 @@ venus.y_vel = -2.3
 # Earth
 earth = Planet(WIDTH // 2 - 260, HEIGHT // 2, 10, BLUE, 10, "Earth")
 earth.y_vel = -1.9
-
-# Moon
+#Moon
 moon = Planet(earth.x - 25, earth.y, 3, WHITE, 1, "Moon")
 moon.center_planet = earth
 moon.orbit_radius = 25
@@ -191,6 +202,26 @@ mars.y_vel = -1.6
 # Jupiter
 jupiter=Planet(WIDTH//520, HEIGHT//2, 18, JUPITER_COLOR, 250, "Jupiter")
 jupiter.y_vel=-1.3
+#Io
+io=Planet(jupiter.x-25, jupiter.y, 3, IO_COLOR, 1, "Io")
+io.center_planet=jupiter
+io.orbit_radius=25
+io.orbit_speed=0.08
+#Europa
+europa=Planet(jupiter.x-40, jupiter.y, 3, EUROPA_COLOR, 1, "Europa")
+europa.center_planet=jupiter
+europa.orbit_radius=40
+europa.orbit_speed=0.06
+#Ganymede
+ganymede=Planet(jupiter.x-55, jupiter.y, 3, GANYMEDE_COLOR, 1, "Ganymede")
+ganymede.center_planet=jupiter
+ganymede.orbit_radius=55
+ganymede.orbit_speed=0.04
+#Callisto
+callisto=Planet(jupiter.x-70, jupiter.y, 3, CALLISTO_COLOR, 1, "Callisto")
+callisto.center_planet=jupiter
+callisto.orbit_radius=70
+callisto.orbit_speed=0.02
 
 asteroids=[]
 for _ in range(120):
@@ -204,7 +235,7 @@ for _ in range(120):
     asteroid.y_vel=-math.cos(angle) * orbital_speed
     asteroids.append(asteroid)
 
-planets = [sun, mercury, venus, earth, moon, mars, jupiter]
+planets = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto]
 
 selected_planet=None
 follow_planet=None
