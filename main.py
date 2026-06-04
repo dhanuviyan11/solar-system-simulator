@@ -17,6 +17,7 @@ RED = (188, 39, 50)
 DARK_GREY = (80, 78, 81)
 ORANGE = (255, 165, 0)
 BLACK = (0, 0, 0)
+JUPITER_COLOR=(210, 180, 140)
 
 # Font
 font = pygame.font.SysFont("Arial", 16)
@@ -75,6 +76,8 @@ class Planet:
         # Planet rendering
         screen_x = (self.x + camera_x) * zoom
         screen_y = (self.y + camera_y) * zoom
+        if self.name == "Jupiter":
+            pygame.draw.circle(win, (230, 200, 160), (int(screen_x), int(screen_y)), max(1, int((self.radius)*zoom)))
         pygame.draw.circle(win, self.color, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
         # Labels
         if self.name != "Asteroid":
@@ -185,6 +188,10 @@ moon.orbit_speed = 0.05
 mars = Planet(WIDTH // 2 - 340, HEIGHT // 2, 7, RED, 7, "Mars")
 mars.y_vel = -1.6
 
+# Jupiter
+jupiter=Planet(WIDTH//520, HEIGHT//2, 18, JUPITER_COLOR, 250, "Jupiter")
+jupiter.y_vel=-1.3
+
 asteroids=[]
 for _ in range(120):
     angle=random.uniform(0, 2*math.pi)
@@ -197,9 +204,10 @@ for _ in range(120):
     asteroid.y_vel=-math.cos(angle) * orbital_speed
     asteroids.append(asteroid)
 
-planets = [sun, mercury, venus, earth, moon, mars]
+planets = [sun, mercury, venus, earth, moon, mars, jupiter]
 
 selected_planet=None
+follow_planet=None
 run = True
 while run:
     clock.tick(60)
@@ -216,6 +224,8 @@ while run:
             # Slower simulation
             if event.key == pygame.K_DOWN:
                 simulation_speed = max(1, simulation_speed - 1)
+            if event.key == pygame.K_ESCAPE:
+                follow_planet=None
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y=pygame.mouse.get_pos()
             for planet in planets:
@@ -224,6 +234,7 @@ while run:
                 distance=math.sqrt((mouse_x-screen_x)**2+(mouse_y-screen_y)**2)
                 if distance<planet.radius*zoom:
                     selected_planet=planet
+                    follow_planet=planet
 
     # Camera controls
     keys = pygame.key.get_pressed()
@@ -248,5 +259,8 @@ while run:
                 planet.update_position(planets)
             for asteroid in asteroids:
                 asteroid.update_position([sun])
+    if follow_planet:
+        camera_x = WIDTH/2/zoom-follow_planet.x
+        camera_y = HEIGHT/2/zoom-follow_planet.y
     draw_window()           
 pygame.quit()
