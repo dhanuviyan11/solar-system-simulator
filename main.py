@@ -12,16 +12,19 @@ pygame.display.set_caption("Solar System Simulator")
 # Colors
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
-BLUE = (100, 149, 237)
-RED = (188, 39, 50)
-DARK_GREY = (80, 78, 81)
-ORANGE = (255, 165, 0)
 BLACK = (0, 0, 0)
-JUPITER_COLOR=(210, 180, 140)
+MERCURY_COLOR = (169, 169, 169)
+VENUS_COLOR   = (255, 198, 73)
+EARTH_COLOR   = (100, 149, 237)
+MARS_COLOR    = (188, 39, 50)
+JUPITER_COLOR = (210, 180, 140)
+SATURN_COLOR  = (230, 210, 140)
+DARK_GREY = (105, 105, 105)
 IO_COLOR=(255, 255, 255)
 EUROPA_COLOR=(200, 200, 255)
 GANYMEDE_COLOR=(200, 200, 200)
 CALLISTO_COLOR=(150, 150, 150)
+
 
 # Font
 font = pygame.font.SysFont("Arial", 16)
@@ -48,7 +51,7 @@ paused = False
 class Planet:
     AU = 1
     G = 0.25
-    TIMESTEP = 0.12
+    TIMESTEP = 0.05
 
     def __init__(self, x, y, radius, color, mass, name):
         self.x = x
@@ -70,26 +73,22 @@ class Planet:
     def draw(self, win):
         global camera_x, camera_y, zoom
         # Orbit trail
-        orbit_points = []
-        for point in self.orbit:
-            x = (point[0] + camera_x) * zoom
-            y = (point[1] + camera_y) * zoom
-            orbit_points.append((x, y))
-        if len(orbit_points) > 1:
-            pygame.draw.lines(win, self.color, False, orbit_points, 2)
+        if not self.center_planet:
+            orbit_points = []
+            for point in self.orbit:
+                x = (point[0] + camera_x) * zoom
+                y = (point[1] + camera_y) * zoom
+                orbit_points.append((x, y))
+            if len(orbit_points) > 1:
+                pygame.draw.lines(win, self.color, False, orbit_points, 2)
         # Planet rendering
         screen_x = (self.x + camera_x) * zoom
         screen_y = (self.y + camera_y) * zoom
+        #Saturn Rings
+        if self.name == "Saturn":
+            pygame.draw.ellipse(win, (180, 180, 180), (int(screen_x-2*self.radius*zoom), int(screen_y-self.radius*zoom), int(self.radius*4*zoom), int(self.radius*2*zoom)), max(1, int(2*zoom)))
         if self.name == "Jupiter":
             pygame.draw.circle(win, (230, 200, 160), (int(screen_x), int(screen_y)), max(1, int((self.radius)*zoom)))
-        '''elif self.name == "Io":
-            pygame.draw.circle(win, IO_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
-        elif self.name == "Europa":
-            pygame.draw.circle(win, EUROPA_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
-        elif self.name == "Ganymede":
-            pygame.draw.circle(win, GANYMEDE_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
-        elif self.name == "Callisto":
-            pygame.draw.circle(win, CALLISTO_COLOR, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))'''
         pygame.draw.circle(win, self.color, (int(screen_x), int(screen_y)), max(1, int(self.radius * zoom)))
         # Labels
         if self.name != "Asteroid":
@@ -160,6 +159,10 @@ def draw_window():
         f"Simulation_speed: {simulation_speed}x",
         f"Paused: {paused}"
     ]
+    controls=["WASD: Move Camera", "Q/E: Zoom", "Up/Down: Time Speed", "Space: Pause", "Click: Select Planet", "ESC: Unlock Camera"]
+    for i, text in enumerate(controls):
+        render = font.render(text, True, WHITE)
+        WIN.blit(render, (10, HEIGHT - 140 + i * 20))
     for i, text in enumerate(hud_text):
         render = font.render(text, True, WHITE)
         WIN.blit(render, (10, 10 + i * 20))
@@ -167,7 +170,8 @@ def draw_window():
         panel_x=WIDTH-260
         panel_y=20
         pygame.draw.rect(WIN, (30, 30, 30), (panel_x, panel_y, 240, 180))
-        info=[f"Name: {selected_planet.name}", f"Mass: {selected_planet.mass}", f"X: {selected_planet.x:.2f}", f"Y: {selected_planet.y:.2f}", f"X_vel: {selected_planet.x_vel:.2f}", f"Y_vel: {selected_planet.y_vel:.2f}"]
+        speed=math.sqrt(selected_planet.x_vel**2 + selected_planet.y_vel**2)
+        info=[f"Name: {selected_planet.name}", f"Mass: {selected_planet.mass}", f"X: {selected_planet.x:.2f}", f"Y: {selected_planet.y:.2f}", f"X_vel: {selected_planet.x_vel:.2f}", f"Y_vel: {selected_planet.y_vel:.2f}", f"Speed: {speed:.2f}"]
         for i, text in enumerate(info):
             render=font.render(text, True, WHITE)
             WIN.blit(render, (panel_x + 10, panel_y + 10 + i *20))
@@ -179,15 +183,15 @@ sun = Planet(WIDTH // 2, HEIGHT // 2, 30, YELLOW, 5000, "Sun")
 sun.sun = True
 
 # Mercury
-mercury = Planet(WIDTH // 2 - 120, HEIGHT // 2, 5, DARK_GREY, 5, "Mercury")
+mercury = Planet(WIDTH // 2 - 120, HEIGHT // 2, 5, MERCURY_COLOR, 5, "Mercury")
 mercury.y_vel = -2.8
 
 # Venus
-venus = Planet(WIDTH // 2 - 180, HEIGHT // 2, 8, ORANGE, 8, "Venus")
+venus = Planet(WIDTH // 2 - 180, HEIGHT // 2, 8, VENUS_COLOR, 8, "Venus")
 venus.y_vel = -2.3
 
 # Earth
-earth = Planet(WIDTH // 2 - 260, HEIGHT // 2, 10, BLUE, 10, "Earth")
+earth = Planet(WIDTH // 2 - 260, HEIGHT // 2, 10, EARTH_COLOR, 10, "Earth")
 earth.y_vel = -1.9
 #Moon
 moon = Planet(earth.x - 25, earth.y, 3, WHITE, 1, "Moon")
@@ -196,11 +200,11 @@ moon.orbit_radius = 25
 moon.orbit_speed = 0.05
 
 # Mars
-mars = Planet(WIDTH // 2 - 340, HEIGHT // 2, 7, RED, 7, "Mars")
+mars = Planet(WIDTH // 2 - 340, HEIGHT // 2, 7, MARS_COLOR, 7, "Mars")
 mars.y_vel = -1.6
 
 # Jupiter
-jupiter=Planet(WIDTH//520, HEIGHT//2, 18, JUPITER_COLOR, 250, "Jupiter")
+jupiter=Planet(WIDTH//2-650, HEIGHT//2, 18, JUPITER_COLOR, 250, "Jupiter")
 jupiter.y_vel=-1.3
 #Io
 io=Planet(jupiter.x-25, jupiter.y, 3, IO_COLOR, 1, "Io")
@@ -222,6 +226,10 @@ callisto=Planet(jupiter.x-70, jupiter.y, 3, CALLISTO_COLOR, 1, "Callisto")
 callisto.center_planet=jupiter
 callisto.orbit_radius=70
 callisto.orbit_speed=0.02
+#Saturn
+saturn=Planet(WIDTH//2-900, HEIGHT//2, 16, SATURN_COLOR, 180, "Saturn")
+saturn.y_vel=-1.1
+
 
 asteroids=[]
 for _ in range(120):
@@ -235,7 +243,7 @@ for _ in range(120):
     asteroid.y_vel=-math.cos(angle) * orbital_speed
     asteroids.append(asteroid)
 
-planets = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto]
+planets = [sun, mercury, venus, earth, moon, mars, jupiter, io, europa, ganymede, callisto, saturn]
 
 selected_planet=None
 follow_planet=None
